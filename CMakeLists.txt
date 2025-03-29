@@ -12,18 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-if(APPLE AND WITH_ARM)
-  # cmake 3.19.2 version starts to support M1
-  cmake_minimum_required(VERSION 3.19.2)
-  cmake_policy(VERSION 3.19.2)
-else()
-  cmake_minimum_required(VERSION 3.15)
-  cmake_policy(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
+
+set(target_arch aarch64-linux-gnu)
+set(CMAKE_LIBRARY_ARCHITECTURE ${target_arch} CACHE STRING "" FORCE)
+
+# specify the toolchain programs
+find_program(CMAKE_C_COMPILER ${target_arch}-gcc)
+find_program(CMAKE_CXX_COMPILER ${target_arch}-g++ NO_CACHE )
+if(NOT CMAKE_C_COMPILER OR NOT CMAKE_CXX_COMPILER)
+    message(FATAL_ERROR "Can't find suitable C/C++ cross compiler for ${target_arch}")
 endif()
-# use to get_property location of static lib
-# https://cmake.org/cmake/help/v3.0/policy/CMP0026.html?highlight=cmp0026
-cmake_policy(SET CMP0026 OLD)
+
+set(CMAKE_AR ${target_arch}-ar CACHE FILEPATH "" FORCE)
+set(CMAKE_RANLIB ${target_arch}-ranlib)
+set(CMAKE_LINKER ${target_arch}-ld)
+
+# Not all shared libraries dependencies are instaled in host machine.
+# Make sure linker doesn't complain.
+set(CMAKE_EXE_LINKER_FLAGS_INIT -Wl,--allow-shlib-undefined)
+
+# instruct nvcc to use our cross-compiler
+set(CMAKE_CUDA_FLAGS "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler -fPIC" CACHE STRING "" FORCE)
+
+SET(TARGET_FS "/l4t/targetfs/")
+SET(SMS "87")
+
 cmake_policy(SET CMP0079 NEW)
+cmake_policy(SET CMP0026 OLD)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(PADDLE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(PADDLE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -606,8 +624,7 @@ if(WITH_MPI)
   include(mpi)
 endif()
 
-include(third_party
-)# download, build, install third_party, Contains about 20+ dependencies
+include(third_party) # download, build, install third_party, Contains about 20+ dependencies
 
 include(flags) # set paddle compile flags
 include(util) # set unittest and link libs
