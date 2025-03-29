@@ -1,0 +1,16 @@
+cmake  .. \
+    -DWITH_MKL=ON \
+    -DWITH_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DWITH_INFERENCE_API_TEST=OFF \
+    -DON_INFER=ON \
+    -DWITH_GPU=OFF \
+    -DWITH_PYTHON=ON \
+    -DPYTHON_EXECUTABLE=$(which python3.9) \
+    -DPY_PIP=/usr/local/bin/pip \
+    -DWITH_NVCC_LAZY=OFF \
+    -DWITH_NCCL=OFF \
+    -DCUDA_ARCH_NAME=All \
+    -DWITH_NV_JETSON=ON \
+    -DWITH_XBYAK=OFF \
+    -DWITH_ARM=ON 
